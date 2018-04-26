@@ -15,8 +15,13 @@ var app = express()
 //  Obtener todos los usuarios
 // =======================================
 app.get('/', (req, res, next) => {
+    var desde = req.query.desde || 0;
+    desde = Number(desde)
 
     Usuario.find({}, 'nombre email img role')
+
+    .skip(desde)
+        .limit(5)
         .exec(
             (error, usuarios) => {
                 if (error) {
@@ -26,10 +31,14 @@ app.get('/', (req, res, next) => {
                         errors: error
                     })
                 }
-                res.status(200).json({
-                    ok: true,
-                    usuario: usuarios
+                Usuario.count({}, (error, conteo) => {
+                    res.status(200).json({
+                        ok: true,
+                        usuario: usuarios,
+                        total: conteo
+                    })
                 })
+
 
 
             })
