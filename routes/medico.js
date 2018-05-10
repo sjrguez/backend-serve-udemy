@@ -16,12 +16,12 @@ var app = express()
 app.get('/', (req, res) => {
     var desde = req.query.desde || 0;
     desde = Number(desde)
-    Medico.find({}, 'nombre usuario hospital')
+    Medico.find({}, 'nombre img usuario hospital')
 
     .skip(desde)
         .limit(5)
         .populate('usuario', 'nombre email')
-        .populate('usuario')
+        .populate('hospital', 'nombre img')
 
     .exec((error, medicos) => {
         if (error) {
@@ -73,6 +73,45 @@ app.post('/', mdAutenticacion.VerificarToken, (req, res) => {
     })
 
 })
+
+// =======================================
+//  Obtener medico
+// =======================================
+app.get('/:id', (req, res) => {
+    var id = req.params.id
+
+
+    Medico.findById(id)
+        .populate('usuario', 'nombre email img')
+        .populate('hospital')
+        .exec((error, medico) => {
+
+            if (error) {
+                return res.status(500).json({
+                    ok: false,
+                    mensaje: "error al buscar medico",
+                    errors: error
+                })
+            }
+            if (!medico) {
+                return res.status(400).json({
+                    ok: false,
+                    mensaje: "el medico con el id " + id + "no existe",
+                    errors: { mmessage: "No existe el medico" }
+                })
+            }
+
+            res.status(200).json({
+                ok: true,
+                medico: medico
+            })
+
+
+        })
+
+
+})
+
 
 // =======================================
 //  Actualizar un medico
